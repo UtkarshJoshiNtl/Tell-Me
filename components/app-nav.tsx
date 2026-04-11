@@ -1,3 +1,4 @@
+import { SignOutButton } from "@/components/sign-out-button";
 import Link from "next/link";
 
 const linkClass = "text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100";
@@ -15,14 +16,7 @@ export function AppNav({ path }: { path: "/tasks" | "/finance" }) {
           Expenses
         </Link>
       </nav>
-      <form action="/auth/sign-out" method="post">
-        <button
-          type="submit"
-          className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-        >
-          Sign out
-        </button>
-      </form>
+      <SignOutButton />
     </header>
   );
 }

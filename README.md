@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tell Me
 
-## Getting Started
+Minimal personal productivity app: **tasks** (title, date, type) and **expenses** (amount, note, date). **PWA**-installable with basic offline shell. Auth and data live in **Supabase**.
 
-First, run the development server:
+## Requirements
+
+- Node.js 20+ (matches typical Next.js 16 environments)
+- A [Supabase](https://supabase.com) project
+
+## Environment variables
+
+Copy `.env.example` to `.env.local` and set:
+
+| Variable | Purpose |
+|----------|---------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Project URL (Settings → API) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `anon` `public` key |
+| `NEXT_PUBLIC_DEFAULT_CURRENCY` | Optional. ISO 4217 for expense formatting (default `USD`) |
+| `NEXT_PUBLIC_ENABLE_SW` | Optional. Set to `1` to register the service worker in **development** (production registers by default) |
+
+Aliases `SUPABASE_URL` / `SUPABASE_ANON_KEY` are also supported (see `lib/supabase/env.ts`).
+
+## Supabase setup
+
+1. **SQL**: In the SQL editor, run migrations in `supabase/migrations/` in order (`00001`, then `00002` if your project predates enum grants, then `00003` if `due_on` is missing on `tasks`).
+2. **Auth → URL configuration**: Add redirect URLs for every origin you use, for example:
+   - `http://localhost:3000/auth/callback`
+   - `http://localhost:3000/auth/update-password`
+   - The same paths on your **production** domain.
+3. **Email**: Enable the Email provider. If **Confirm email** is on, new users must confirm before a session exists (the sign-up form explains this).
+
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build   # production build
+npm run lint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deploy (Vercel)
 
-## Learn More
+1. Push this repo to GitHub (or GitLab / Bitbucket).
+2. In [Vercel](https://vercel.com), **Import** the repository; framework **Next.js** is auto-detected.
+3. Under **Environment variables**, add the same keys as in `.env.local` (at minimum the two Supabase `NEXT_PUBLIC_*` variables).
+4. Deploy. Use **HTTPS** in production so the **service worker** and **PWA install** work reliably.
 
-To learn more about Next.js, take a look at the following resources:
+`next.config.ts` sets security headers for all routes and `Cache-Control` / `Service-Worker-Allowed` for `/sw.js`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## PWA notes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Install is driven by the web app manifest (`app/manifest.ts`) and icons under `public/`.
+- After deploy, users should open the app **once online** so navigations and `/_next/static` assets can populate the runtime cache.
+- Bump cache names in `public/sw.js` when you need to force clients to drop old cached HTML after a breaking release.
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Private / your choice.

@@ -1,6 +1,6 @@
 /* Tell Me — minimal service worker for installability + basic offline */
-const CORE_CACHE = "tell-me-core-v1";
-const RUNTIME_CACHE = "tell-me-runtime-v1";
+const CORE_CACHE = "tell-me-core-v2";
+const RUNTIME_CACHE = "tell-me-runtime-v2";
 
 const PRECACHE_URLS = [
   "/",
