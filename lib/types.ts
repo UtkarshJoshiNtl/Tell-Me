@@ -1,10 +1,12 @@
-export type TaskCadence = "daily" | "weekly" | "monthly";
+/** Stored as `cadence` in the database; shown as "type" in the UI. */
+export type TaskType = "daily" | "weekly" | "monthly";
 
 export type Task = {
   id: string;
   user_id: string;
   title: string;
-  cadence: TaskCadence;
+  cadence: TaskType;
+  due_on: string;
   done: boolean;
   created_at: string;
 };

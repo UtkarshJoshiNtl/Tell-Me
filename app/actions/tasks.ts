@@ -2,10 +2,10 @@
 
 import { throwIfSupabaseError } from "@/lib/supabase/errors";
 import { getAuthorizedClient } from "@/lib/supabase/session";
-import type { TaskCadence } from "@/lib/types";
+import type { TaskType } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 
-export async function addTask(title: string, cadence: TaskCadence) {
+export async function addTask(title: string, dueOn: string, type: TaskType) {
   const { supabase, user } = await getAuthorizedClient();
 
   const t = title.trim();
@@ -14,7 +14,8 @@ export async function addTask(title: string, cadence: TaskCadence) {
   const { error } = await supabase.from("tasks").insert({
     user_id: user.id,
     title: t,
-    cadence,
+    cadence: type,
+    due_on: dueOn,
   });
   throwIfSupabaseError(error);
   revalidatePath("/tasks");

@@ -7,11 +7,13 @@ create table public.tasks (
   user_id uuid not null references auth.users (id) on delete cascade,
   title text not null,
   cadence public.task_cadence not null default 'daily',
+  due_on date not null default (timezone('utc', now()))::date,
   done boolean not null default false,
   created_at timestamptz not null default now()
 );
 
 create index tasks_user_cadence_idx on public.tasks (user_id, cadence);
+create index tasks_user_due_on_idx on public.tasks (user_id, due_on);
 
 create table public.finance_entries (
   id uuid primary key default gen_random_uuid(),

@@ -7,8 +7,9 @@ export default async function TasksPage() {
   const { supabase, user } = await requireSessionUser();
   const { data: tasks } = await supabase
     .from("tasks")
-    .select("id,user_id,title,cadence,done,created_at")
+    .select("id,user_id,title,cadence,due_on,done,created_at")
     .eq("user_id", user.id)
+    .order("due_on", { ascending: true })
     .order("created_at", { ascending: true });
 
   return (
