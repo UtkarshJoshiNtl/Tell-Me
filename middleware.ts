@@ -7,6 +7,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|.*\\.(?:ico|png|jpg|jpeg|gif|svg|webp)$).*)",
+    /*
+     * Skip static assets, PWA shell (service worker + offline page + manifest),
+     * and image extensions so middleware does not run on those requests.
+     */
+    "/((?!_next/static|_next/image|sw\\.js|offline\\.html|manifest\\.webmanifest|.*\\.(?:ico|png|jpg|jpeg|gif|svg|webp)$).*)",
   ],
 };
