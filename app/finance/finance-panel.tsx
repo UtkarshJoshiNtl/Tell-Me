@@ -23,20 +23,31 @@ export function FinancePanel({ entries }: { entries: FinanceEntry[] }) {
   const [note, setNote] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [pending, startTransition] = useTransition();
+  const [actionError, setActionError] = useState<string | null>(null);
 
   function onAdd(e: React.FormEvent) {
     e.preventDefault();
     const n = parseAmount(amount);
     if (n === null) return;
     startTransition(async () => {
-      await addFinanceEntry(n, note, date);
-      setAmount("");
-      setNote("");
+      try {
+        setActionError(null);
+        await addFinanceEntry(n, note, date);
+        setAmount("");
+        setNote("");
+      } catch (err) {
+        setActionError(err instanceof Error ? err.message : "Could not add entry");
+      }
     });
   }
 
   return (
     <div className="flex flex-col gap-8">
+      {actionError ? (
+        <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+          {actionError}
+        </p>
+      ) : null}
       <form onSubmit={onAdd} className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm sm:col-span-1">
           <span className="text-zinc-600 dark:text-zinc-400">Amount</span>
@@ -115,7 +126,18 @@ export function FinancePanel({ entries }: { entries: FinanceEntry[] }) {
                     <td className="py-2 align-top">
                       <button
                         type="button"
-                        onClick={() => startTransition(() => deleteFinanceEntry(row.id))}
+                        onClick={() =>
+                          startTransition(async () => {
+                            try {
+                              setActionError(null);
+                              await deleteFinanceEntry(row.id);
+                            } catch (err) {
+                              setActionError(
+                                err instanceof Error ? err.message : "Could not remove entry",
+                              );
+                            }
+                          })
+                        }
                         className="text-xs text-zinc-500 hover:text-red-600 dark:hover:text-red-400"
                       >
                         Remove

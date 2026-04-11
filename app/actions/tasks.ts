@@ -1,7 +1,8 @@
 "use server";
 
-import type { TaskCadence } from "@/lib/types";
+import { throwIfSupabaseError } from "@/lib/supabase/errors";
 import { getAuthorizedClient } from "@/lib/supabase/session";
+import type { TaskCadence } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 
 export async function addTask(title: string, cadence: TaskCadence) {
@@ -15,7 +16,7 @@ export async function addTask(title: string, cadence: TaskCadence) {
     title: t,
     cadence,
   });
-  if (error) throw error;
+  throwIfSupabaseError(error);
   revalidatePath("/tasks");
 }
 
@@ -26,7 +27,7 @@ export async function setTaskDone(id: string, done: boolean) {
     .update({ done })
     .eq("id", id)
     .eq("user_id", user.id);
-  if (error) throw error;
+  throwIfSupabaseError(error);
   revalidatePath("/tasks");
 }
 
@@ -37,6 +38,6 @@ export async function deleteTask(id: string) {
     .delete()
     .eq("id", id)
     .eq("user_id", user.id);
-  if (error) throw error;
+  throwIfSupabaseError(error);
   revalidatePath("/tasks");
 }

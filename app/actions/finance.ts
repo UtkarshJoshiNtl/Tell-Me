@@ -1,5 +1,6 @@
 "use server";
 
+import { throwIfSupabaseError } from "@/lib/supabase/errors";
 import { getAuthorizedClient } from "@/lib/supabase/session";
 import { revalidatePath } from "next/cache";
 
@@ -16,7 +17,7 @@ export async function addFinanceEntry(
     note: note.trim() || null,
     occurred_on: occurredOn,
   });
-  if (error) throw error;
+  throwIfSupabaseError(error);
   revalidatePath("/finance");
 }
 
@@ -27,6 +28,6 @@ export async function deleteFinanceEntry(id: string) {
     .delete()
     .eq("id", id)
     .eq("user_id", user.id);
-  if (error) throw error;
+  throwIfSupabaseError(error);
   revalidatePath("/finance");
 }

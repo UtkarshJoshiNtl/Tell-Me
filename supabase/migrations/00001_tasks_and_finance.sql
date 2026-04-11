@@ -58,3 +58,6 @@ create policy "finance_update_own"
 create policy "finance_delete_own"
   on public.finance_entries for delete
   using (auth.uid() = user_id);
+
+-- API roles must be able to use the cadence enum when inserting/updating rows
+grant usage on type public.task_cadence to anon, authenticated, service_role;

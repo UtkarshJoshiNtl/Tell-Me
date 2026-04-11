@@ -10,6 +10,7 @@ export function TasksPanel({ tasks }: { tasks: Task[] }) {
   const [cadence, setCadence] = useState<TaskCadence>("daily");
   const [title, setTitle] = useState("");
   const [pending, startTransition] = useTransition();
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const filtered = useMemo(
     () => tasks.filter((t) => t.cadence === cadence),
@@ -21,8 +22,13 @@ export function TasksPanel({ tasks }: { tasks: Task[] }) {
     const t = title.trim();
     if (!t) return;
     startTransition(async () => {
-      await addTask(t, cadence);
-      setTitle("");
+      try {
+        setActionError(null);
+        await addTask(t, cadence);
+        setTitle("");
+      } catch (e) {
+        setActionError(e instanceof Error ? e.message : "Could not add task");
+      }
     });
   }
 
@@ -46,6 +52,12 @@ export function TasksPanel({ tasks }: { tasks: Task[] }) {
           </button>
         ))}
       </div>
+
+      {actionError ? (
+        <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+          {actionError}
+        </p>
+      ) : null}
 
       <form onSubmit={onAdd} className="flex flex-col gap-2 sm:flex-row sm:items-end">
         <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
@@ -79,7 +91,14 @@ export function TasksPanel({ tasks }: { tasks: Task[] }) {
                 type="checkbox"
                 checked={task.done}
                 onChange={(e) => {
-                  startTransition(() => setTaskDone(task.id, e.target.checked));
+                  startTransition(async () => {
+                    try {
+                      setActionError(null);
+                      await setTaskDone(task.id, e.target.checked);
+                    } catch (err) {
+                      setActionError(err instanceof Error ? err.message : "Could not update task");
+                    }
+                  });
                 }}
                 className="h-4 w-4 shrink-0"
               />
@@ -92,7 +111,16 @@ export function TasksPanel({ tasks }: { tasks: Task[] }) {
               </span>
               <button
                 type="button"
-                onClick={() => startTransition(() => deleteTask(task.id))}
+                onClick={() =>
+                  startTransition(async () => {
+                    try {
+                      setActionError(null);
+                      await deleteTask(task.id);
+                    } catch (err) {
+                      setActionError(err instanceof Error ? err.message : "Could not remove task");
+                    }
+                  })
+                }
                 className="shrink-0 text-xs text-zinc-500 hover:text-red-600 dark:hover:text-red-400"
               >
                 Remove
