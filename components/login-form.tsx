@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -8,6 +9,7 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -15,6 +17,7 @@ export function LoginForm() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setInfoMessage(null);
     const supabase = createClient();
     const { error: err } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
@@ -30,11 +33,18 @@ export function LoginForm() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setInfoMessage(null);
     const supabase = createClient();
-    const { error: err } = await supabase.auth.signUp({ email, password });
+    const { data, error: err } = await supabase.auth.signUp({ email, password });
     setLoading(false);
     if (err) {
       setError(err.message);
+      return;
+    }
+    if (!data.session) {
+      setInfoMessage(
+        "Check your email to confirm your account before signing in. You can close this tab.",
+      );
       return;
     }
     router.refresh();
@@ -69,6 +79,9 @@ export function LoginForm() {
         />
       </label>
       {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+      {infoMessage ? (
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">{infoMessage}</p>
+      ) : null}
       <div className="flex flex-wrap gap-2">
         <button
           type="submit"
@@ -86,6 +99,11 @@ export function LoginForm() {
           Create account
         </button>
       </div>
+      <p className="text-center text-sm">
+        <Link href="/forgot-password" className="text-zinc-500 underline hover:text-zinc-800 dark:hover:text-zinc-200">
+          Forgot password?
+        </Link>
+      </p>
     </form>
   );
 }
