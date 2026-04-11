@@ -9,7 +9,9 @@ export async function addTask(title: string, dueOn: string, type: TaskType) {
   const { supabase, user } = await getAuthorizedClient();
 
   const t = title.trim();
-  if (!t) return;
+  if (!t) {
+    throw new Error("Title is required.");
+  }
 
   const { error } = await supabase.from("tasks").insert({
     user_id: user.id,
@@ -17,6 +19,26 @@ export async function addTask(title: string, dueOn: string, type: TaskType) {
     cadence: type,
     due_on: dueOn,
   });
+  throwIfSupabaseError(error);
+  revalidatePath("/tasks");
+}
+
+export async function updateTask(
+  id: string,
+  title: string,
+  dueOn: string,
+  type: TaskType,
+) {
+  const { supabase, user } = await getAuthorizedClient();
+  const t = title.trim();
+  if (!t) {
+    throw new Error("Title is required.");
+  }
+  const { error } = await supabase
+    .from("tasks")
+    .update({ title: t, due_on: dueOn, cadence: type })
+    .eq("id", id)
+    .eq("user_id", user.id);
   throwIfSupabaseError(error);
   revalidatePath("/tasks");
 }
