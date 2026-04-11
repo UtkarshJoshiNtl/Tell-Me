@@ -1,17 +1,8 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import type { TaskCadence } from "@/lib/types";
+import { getAuthorizedClient } from "@/lib/supabase/session";
 import { revalidatePath } from "next/cache";
-
-async function getAuthorizedClient() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
-  return { supabase, user };
-}
 
 export async function addTask(title: string, cadence: TaskCadence) {
   const { supabase, user } = await getAuthorizedClient();

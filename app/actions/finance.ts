@@ -1,16 +1,7 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { getAuthorizedClient } from "@/lib/supabase/session";
 import { revalidatePath } from "next/cache";
-
-async function getAuthorizedClient() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
-  return { supabase, user };
-}
 
 export async function addFinanceEntry(
   amount: number,
