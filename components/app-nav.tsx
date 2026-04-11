@@ -12,7 +12,7 @@ export function AppNav({ path }: { path: "/tasks" | "/finance" }) {
           Tasks
         </Link>
         <Link href="/finance" className={path === "/finance" ? activeClass : linkClass}>
-          Finance
+          Expenses
         </Link>
       </nav>
       <form action="/auth/sign-out" method="post">
