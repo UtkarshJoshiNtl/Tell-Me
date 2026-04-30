@@ -16,6 +16,7 @@ export function CalendarView({ tasks, expenses }: { tasks: Task[]; expenses: Fin
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isPending, startTransition] = useTransition();
+  const [optimisticDone, setOptimisticDone] = useState<Record<string, boolean>>({});
 
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
@@ -59,11 +60,26 @@ export function CalendarView({ tasks, expenses }: { tasks: Task[]; expenses: Fin
   const isSelected = (dateStr: string) => dateStr === selectedDateString;
 
   async function handleTaskCheck(id: string, done: boolean) {
+    // Optimistically update local state
+    setOptimisticDone(prev => ({ ...prev, [id]: done }));
+    
     startTransition(async () => {
       try {
         await setTaskDone(id, done);
+        // Clear optimistic override on success
+        setOptimisticDone(prev => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
       } catch (err) {
         console.error(err);
+        // Revert on error
+        setOptimisticDone(prev => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
       }
     });
   }
@@ -116,18 +132,21 @@ export function CalendarView({ tasks, expenses }: { tasks: Task[]; expenses: Fin
             {selectedTasks.length === 0 ? (
               <p className="text-sm text-zinc-500">No tasks.</p>
             ) : (
-              selectedTasks.map(t => (
-                <div key={t.id} className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-950 rounded-xl shadow-sm border border-zinc-100 dark:border-zinc-800">
-                  <input 
-                    type="checkbox" 
-                    checked={t.done}
-                    disabled={isPending}
-                    onChange={(e) => handleTaskCheck(t.id, e.target.checked)}
-                    className="w-5 h-5 accent-[#5553d4] rounded"
-                  />
-                  <span className={`text-sm ${t.done ? 'line-through text-zinc-400' : 'text-zinc-900 dark:text-zinc-100'}`}>{t.title}</span>
-                </div>
-              ))
+              selectedTasks.map(t => {
+                const displayDone = optimisticDone[t.id] !== undefined ? optimisticDone[t.id] : t.done;
+                return (
+                  <div key={t.id} className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-950 rounded-xl shadow-sm border border-zinc-100 dark:border-zinc-800">
+                    <input 
+                      type="checkbox" 
+                      checked={displayDone}
+                      disabled={isPending}
+                      onChange={(e) => handleTaskCheck(t.id, e.target.checked)}
+                      className="w-5 h-5 accent-[#5553d4] rounded"
+                    />
+                    <span className={`text-sm ${displayDone ? 'line-through text-zinc-400' : 'text-zinc-900 dark:text-zinc-100'}`}>{t.title}</span>
+                  </div>
+                );
+              })
             )}
           </div>
 

@@ -88,7 +88,8 @@ export function StatsView({ tasks, expenses, currencyCode }: { tasks: Task[]; ex
       }
     });
 
-    const dailyAvgMonth = monthTotal / today.getDate(); // avg over days elapsed so far in month
+    const daysElapsed = Math.max(today.getDate(), 1);
+    const dailyAvgMonth = monthTotal > 0 ? monthTotal / daysElapsed : 0;
     
     let maxWeekAmt = Math.max(...weekData.map(w => w.amount));
     if (maxWeekAmt === 0) maxWeekAmt = 1; // prevent div bypass 0
